@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المنصة السيادية للتحول | Business Follow-up Platform</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
+        
+        :root {
+            --navy-dark: #0F172A;
+            --navy-medium: #1E293B;
+            --navy-light: #334155;
+            --slate-light: #F8FAFC;
+            --gold-accent: #9A7B56; 
+            --gold-light: #DFBD7E;
+            --border-color: #E2E8F0;
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --success-green: #15803D;
+            --chart-blue: #0284C7;
+            --chart-purple: #7C3AED;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--slate-light);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* مؤشر التقدم العلوي */
+        .top-edge-progress { position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: #E2E8F0; z-index: 9999; }
+        .top-edge-fill { height: 100%; width: 0%; background: var(--gold-accent); transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* الشريط الجانبي */
+        .sidebar { width: 330px; background-color: var(--navy-dark); color: #FFFFFF; display: flex; flex-direction: column; border-left: 1px solid rgba(255, 255, 255, 0.05); box-shadow: -5px 0 20px rgba(0,0,0,0.1); z-index: 10; }
+        .sidebar-brand { padding: 40px 20px 30px; font-weight: 900; font-size: 1.4em; border-bottom: 1px solid rgba(255, 255, 255, 0.05); text-align: center; }
+        .sidebar-brand span { color: var(--gold-accent); display: block; font-size: 0.65em; font-weight: 700; margin-top: 5px; letter-spacing: 1px; text-transform: uppercase; font-family: Arial, sans-serif; }
+        .sidebar-menu { flex: 1; overflow-y: auto; padding: 15px 0; }
+        .menu-category { font-size: 0.85em; color: #64748B; padding: 15px 25px 5px; font-weight: 800; letter-spacing: 0.5px; }
+        .menu-link { padding: 15px 25px; font-size: 1.05em; font-weight: 600; cursor: pointer; color: #94A3B8; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s ease; border-right: 4px solid transparent; }
+        .menu-link:hover { color: #FFFFFF; background-color: rgba(255, 255, 255, 0.03); }
+        .menu-link.active { color: #FFFFFF; background-color: var(--navy-medium); border-right-color: var(--gold-accent); }
+
+        /* منطقة العمل الرئيسية */
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; background-color: #FFFFFF; margin-top: 6px; }
+        .top-bar { height: 80px; background-color: #FFFFFF; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; padding: 0 40px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); z-index: 5; }
+        .top-bar-title { font-size: 1.3em; font-weight: 800; color: var(--navy-dark); }
+        .global-progress { display: flex; align-items: center; gap: 15px; background: var(--slate-light); padding: 10px 20px; border-radius: 6px; border: 1px solid var(--border-color); }
+        .progress-track { width: 150px; height: 8px; background-color: #E2E8F0; border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; width: 0%; background-color: var(--gold-accent); transition: width 0.5s ease; }
+        #progress-num { font-size: 1.1em; font-weight: 800; color: var(--navy-dark); }
+
+        .workspace { flex: 1; padding: 40px 50px; overflow-y: auto; scroll-behavior: smooth; background-color: var(--slate-light); display: flex; flex-direction: column; }
+        .content-view { display: none; animation: fadeIn 0.4s ease-out; flex: 1; }
+        .content-view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .view-title { font-size: 2.2em; font-weight: 800; color: var(--navy-dark); margin-top: 0; margin-bottom: 35px; border-bottom: 3px solid var(--gold-accent); padding-bottom: 10px; display: inline-block; }
+
+        /* التنسيقات العامة للمحتوى */
+        .strategic-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-bottom: 40px; }
+        .strategic-card { background-color: #FFFFFF; border: 1px solid var(--border-color); padding: 30px; border-radius: 8px; border-top: 4px solid var(--navy-dark); }
+        .strategic-card h3 { font-size: 1.3em; font-weight: 800; color: var(--navy-dark); margin-top: 0; margin-bottom: 15px; }
+        
+        .org-hierarchy-container { background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 8px; padding: 50px 20px; margin-bottom: 50px; display: flex; flex-direction: column; align-items: center; overflow-x: auto; }
+        .org-level { display: flex; justify-content: center; width: 100%; position: relative; }
+        .org-card { background: var(--slate-light); border: 1px solid var(--border-color); border-radius: 6px; width: 320px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); position: relative; z-index: 2; }
+        .org-card.primary { border-color: var(--navy-dark); box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08); }
+        .org-card-header { background: var(--navy-dark); color: #FFF; padding: 15px 20px; font-size: 1.15em; font-weight: 800; text-align: center; border-radius: 5px 5px 0 0; }
+        .org-card-body { padding: 20px; }
+        .org-card-body ul { margin: 0; padding-right: 20px; }
+        .org-card-body li { font-size: 0.95em; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.5; }
+        .connector-vertical { width: 2px; height: 40px; background-color: var(--navy-light); margin: 0 auto; }
+        .connector-horizontal-wrapper { display: flex; justify-content: center; width: 100%; }
+        .connector-horizontal { height: 2px; background-color: var(--navy-light); width: 760px; }
+        .org-branches { display: flex; justify-content: center; gap: 40px; width: 100%; }
+        .org-branch { display: flex; flex-direction: column; align-items: center; }
+
+        /* المهام الإجرائية */
+        .task-list-panel { background-color: #FFFFFF; border: 1px solid var(--border-color); border-radius: 8px; padding: 40px; margin-bottom: 30px; border-top: 4px solid var(--gold-accent); }
+        .task-row { display: flex; align-items: center; padding: 18px 25px; background-color: var(--slate-light); border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s ease; }
+        .task-row.checked { background-color: #F0FDF4; border-color: #BBF7D0; border-right: 6px solid var(--success-green); }
+        .task-row input[type="checkbox"] { width: 22px; height: 22px; margin-left: 20px; accent-color: var(--success-green); cursor: pointer; }
+        .task-row label { font-size: 1.15em; font-weight: 700; color: var(--navy-medium); cursor: pointer; width: 100%; user-select: none; }
+        .task-row.checked label { text-decoration: line-through; color: #94A3B8; }
+
+        /* قسم النماذج التطبيقية */
+        .templates-container { background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 8px; padding: 35px; margin-top: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .templates-container h3 { font-size: 1.4em; color: var(--navy-dark); margin-top: 0; margin-bottom: 20px; }
+        .template-box { background: var(--slate-light); border: 1px dashed var(--navy-light); padding: 20px 25px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+        .template-info h4 { margin: 0 0 5px 0; font-size: 1.2em; color: var(--navy-dark); }
+        .template-info p { margin: 0; font-size: 0.95em; color: var(--text-secondary); }
+        .template-btn { background: var(--navy-dark); color: #FFF; padding: 10px 20px; border-radius: 4px; font-size: 0.95em; font-weight: 700; cursor: pointer; border: none; transition: background 0.2s; }
+        .template-btn:hover { background: var(--gold-accent); }
+
+        /* النوافذ المنبثقة (Modals) للنماذج المعبأة */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: #FFFFFF; width: 90%; max-width: 800px; max-height: 85vh; border-radius: 12px; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.2); position: relative; padding: 40px; }
+        .close-modal { position: absolute; top: 20px; left: 20px; background: #F1F5F9; border: none; font-size: 1.5em; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; color: var(--navy-dark); font-weight: bold; }
+        .close-modal:hover { background: #E2E8F0; color: #EF4444; }
+        
+        .doc-header { text-align: center; border-bottom: 2px solid var(--navy-dark); padding-bottom: 20px; margin-bottom: 30px; }
+        .doc-header h2 { margin: 0 0 10px 0; color: var(--navy-dark); font-size: 1.8em; }
+        .doc-header p { margin: 0; color: var(--text-secondary); font-weight: 600; }
+        
+        .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .doc-table th, .doc-table td { border: 1px solid var(--border-color); padding: 15px; text-align: right; }
+        .doc-table th { background: var(--slate-light); color: var(--navy-dark); font-weight: 800; width: 25%; }
+        .doc-table td { color: var(--text-secondary); font-weight: 600; line-height: 1.6; }
+
+        /* Power BI Dashboard */
+        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+        .kpi-card { background: #FFFFFF; border: 1px solid var(--border-color); padding: 25px; border-radius: 8px; border-top: 4px solid var(--navy-dark); }
+        .kpi-title { font-size: 1.05em; color: var(--text-secondary); font-weight: 700; margin-bottom: 10px; }
+        .kpi-value { font-size: 2.4em; font-weight: 900; color: var(--navy-dark); }
+        .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .chart-box { background: #FFFFFF; border: 1px solid var(--border-color); padding: 25px; border-radius: 8px; }
+        .bar-chart { display: flex; align-items: flex-end; gap: 15px; height: 200px; padding-bottom: 10px; border-bottom: 2px solid var(--border-color); }
+        .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+        .bar { width: 100%; background: var(--chart-blue); border-radius: 3px 3px 0 0; transition: height 1s ease; }
+        .bar-label { margin-top: 10px; font-size: 0.85em; font-weight: 700; color: var(--text-secondary); }
+
+        .report-panel { background: #FFFFFF; border: 1px solid var(--border-color); padding: 50px; border-radius: 8px; }
+        .export-btn { background-color: var(--navy-dark); color: #FFFFFF; border: none; padding: 12px 30px; font-size: 1.1em; font-weight: 700; border-radius: 6px; cursor: pointer; display: flex; align-items: center; margin: 0 auto 30px auto; }
+        
+        .designer-footer { text-align: center; margin-top: auto; padding: 30px 0 10px 0; color: var(--text-secondary); font-size: 1em; font-weight: 700; }
+
+        @media print {
+            body { background: #FFFFFF; }
+            .top-edge-progress, .sidebar, .top-bar, .export-btn, .designer-footer, .modal-overlay { display: none !important; }
+            .main-container, .workspace { padding: 0; background: #FFFFFF; overflow: visible; display: block; margin: 0; }
+            .content-view { display: none; }
+            #report-section { display: block !important; }
+            .report-panel { border: none; box-shadow: none; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-edge-progress"><div class="top-edge-fill" id="top-edge-fill"></div></div>
+
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            منصة متابعة الأعمال
+            <span>Business Follow-up Platform</span>
+        </div>
+        <nav class="sidebar-menu">
+            <div class="menu-category">المنطلق المؤسسي</div>
+            <div class="menu-link active" onclick="navigate('framework', this)">التوجه الاستراتيجي والهيكل</div>
+            
+            <div class="menu-category">خارطة التحول الميداني (ADDIE)</div>
+            <div class="menu-link" onclick="navigate('p1', this)">التحليل والتشخيص (A)</div>
+            <div class="menu-link" onclick="navigate('p2', this)">التصميم والهندسة (D)</div>
+            <div class="menu-link" onclick="navigate('p3', this)">التطوير والإنتاج (D)</div>
+            <div class="menu-link" onclick="navigate('p4', this)">التنفيذ والممارسة (I)</div>
+            <div class="menu-link" onclick="navigate('p5', this)">التقويم والأثر (E)</div>
+
+            <div class="menu-category">صناعة القرار والاعتماد</div>
+            <div class="menu-link" onclick="navigate('dashboard-analytics', this)">لوحة تحليل البيانات (Power BI)</div>
+            <div class="menu-link" onclick="navigate('report-section', this)" style="color: var(--gold-light);">تقرير الإنجاز النهائي وتصديره</div>
+        </nav>
+    </aside>
+
+    <main class="main-container">
+        <header class="top-bar">
+            <div class="top-bar-title">الخطة الاستراتيجية 2026-2028 | نظام إدارة الأداء التكنولوجي</div>
+            <div class="global-progress">
+                <span class="progress-label">مؤشر الإنجاز الكلي</span>
+                <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+                <span id="progress-num">0%</span>
+            </div>
+        </header>
+
+        <div class="workspace">
+
+            <section id="framework" class="content-view active">
+                <h2 class="view-title">التوجه الاستراتيجي والهيكل التنظيمي</h2>
+                
+                <div class="strategic-grid">
+                    <div class="strategic-card">
+                        <h3>الرؤية الاستراتيجية</h3>
+                        <p>تأسيس بيئة تعليمية ذكية، آمنة، ومستدامة، تتبنى التقنية والذكاء الاصطناعي كفلسفة عمل شاملة مدمجة في صميم الممارسات التربوية لمدارس الصالحية الأهلية.</p>
+                    </div>
+                    <div class="strategic-card">
+                        <h3>الرسالة المؤسسية</h3>
+                        <p>تمكين القيادات التربوية والمعلمين من التطوير المهني التكاملي، وحوكمة الأصول والبيانات الرقمية، لضمان مخرجات تعليمية مبتكرة.</p>
+                    </div>
+                    <div class="strategic-card">
+                        <h3>القيم الحاكمة</h3>
+                        <p>الحوكمة الرشيدة، الأمن والمسؤولية الأخلاقية، العدالة الرقمية، الابتكار الإنتاجي، والشفافية المبنية على الأدلة والبيانات.</p>
+                    </div>
+                </div>
+
+                <h2 class="view-title" style="font-size: 1.8em; margin-top: 20px;">خريطة الحوكمة وتوزيع المسؤوليات</h2>
+                <div class="org-hierarchy-container">
+                    <div class="org-level">
+                        <div class="org-card primary">
+                            <div class="org-card-header">القائد التربوي التكنولوجي</div>
+                            <div class="org-card-body">
+                                <ul>
+                                    <li>صياغة الرؤية الاستراتيجية الرقمية.</li>
+                                    <li>إدارة التغيير ومعالجة مقاومة الميدان.</li>
+                                    <li>اتخاذ القرارات المبنية على البيانات (DIKW).</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="connector-vertical"></div>
+                    <div class="org-level">
+                        <div class="org-card" style="border-color: var(--gold-accent);">
+                            <div class="org-card-header" style="background: var(--gold-accent); color: var(--navy-dark);">مجلس الحوكمة الرقمية المشترك</div>
+                            <div class="org-card-body">
+                                <ul>
+                                    <li>تشريع سياسات الذكاء الاصطناعي.</li>
+                                    <li>منع القرارات الآلية غير المراجعة بشرياً.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="connector-vertical"></div>
+                    <div class="connector-horizontal-wrapper"><div class="connector-horizontal"></div></div>
+                    <div class="org-branches">
+                        <div class="org-branch">
+                            <div class="connector-vertical" style="height: 20px;"></div>
+                            <div class="org-card">
+                                <div class="org-card-header" style="background: var(--navy-light);">الإدارة التشغيلية (CoSN)</div>
+                                <div class="org-card-body"><ul><li>إدارة البنية التحتية والموارد الفنية.</li></ul></div>
+                            </div>
+                        </div>
+                        <div class="org-branch">
+                            <div class="connector-vertical" style="height: 20px;"></div>
+                            <div class="org-card">
+                                <div class="org-card-header" style="background: var(--navy-light);">الإدارة التربوية (ISTE)</div>
+                                <div class="org-card-body"><ul><li>هندسة التعليم وفق (TPACK) و (PIC-RAT).</li></ul></div>
+                            </div>
+                        </div>
+                        <div class="org-branch">
+                            <div class="connector-vertical" style="height: 20px;"></div>
+                            <div class="org-card">
+                                <div class="org-card-header" style="background: var(--navy-light);">التمكين ونقل الأثر</div>
+                                <div class="org-card-body"><ul><li>التدريب التشاركي وتوثيق النجاح.</li></ul></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="p1" class="content-view task-phase">
+                <h2 class="view-title">المرحلة الأولى: التحليل والتشخيص المتكامل (Analysis)</h2>
+                
+                <div class="task-list-panel">
+                    <h3>المهام الإجرائية لاعتماد المرحلة</h3>
+                    <div class="task-row" onclick="checkboxTrigger(this)">
+                        <input type="checkbox" class="task-check" data-task="تأسيس مجلس الحوكمة الرقمية المشترك لضمان المشاركة في القرار.">
+                        <label>تأسيس مجلس الحوكمة الرقمية المشترك لضمان المشاركة في القرار.</label>
+                    </div>
+                    <div class="task-row" onclick="checkboxTrigger(this)">
+                        <input type="checkbox" class="task-check" data-task="إدارة مسح بيئي كامل للبنية التحتية بالاعتماد على مصفوفة SWOT.">
+                        <label>إدارة مسح بيئي كامل للبنية التحتية بالاعتماد على مصفوفة SWOT.</label>
+                    </div>
+                </div>
+
+                <div class="templates-container">
+                    <h3>📄 النماذج الإجرائية التطبيقية</h3>
+                    <div class="template-box">
+                        <div class="template-info">
+                            <h4>نموذج استخلاص القرار (DIKW) - معبأ</h4>
+                            <p>تحليل بيانات دخول المعلمين للمنصة واستخراج القرار الإداري الحكيم.</p>
+                        </div>
+                        <button class="template-btn" onclick="openModal('modal-dikw')">عرض النموذج التطبيقي</button>
+                    </div>
+                    <div class="template-box">
+                        <div class="template-info">
+                            <h4>قالب التحليل البيئي (SWOT) - معبأ</h4>
+                            <p>رصد واقع البيئة التقنية لمدارس الصالحية الأهلية بدقة.</p>
+                        </div>
+                        <button class="template-btn" onclick="openModal('modal-swot')">عرض النموذج التطبيقي</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="p2" class="content-view task-phase">
+                <h2 class="view-title">المرحلة الثانية: التصميم والهندسة (Design)</h2>
+                <div class="task-list-panel">
+                    <div class="task-row" onclick="checkboxTrigger(this)">
+                        <input type="checkbox" class="task-check" data-task="صياغة الميثاق الأخلاقي لضمان المراجعة البشرية للقرارات الآلية.">
+                        <label>صياغة الميثاق الأخلاقي لضمان المراجعة البشرية للقرارات الآلية.</label>
+                    </div>
+                    <div class="task-row" onclick="checkboxTrigger(this)">
+                        <input type="checkbox" class="task-check" data-task="تحديد أهداف استراتيجية ذكية (SMART) يحتوي كل منها على فعل سلوكي واحد.">
+                        <label>تحديد أهداف استراتيجية ذكية (SMART) يحتوي كل منها على فعل سلوكي واحد قابل للقياس.</label>
+                    </div>
+                </div>
+
+                <div class="templates-container">
+                    <h3>📄 النماذج الإجرائية التطبيقية</h3>
+                    <div class="template-box">
+                        <div class="template-info">
+                            <h4>مصفوفة الأهداف الذكية (SMART) - معبأة</h4>
+                            <p>أهداف مصاغة بفعل سلوكي واحد لضمان دقة القياس وعدم التشتت.</p>
+                        </div>
+                        <button class="template-btn" onclick="openModal('modal-smart')">عرض النموذج التطبيقي</button>
+                    </div>
+                </div>
+            </section>
+
+             <section id="p3" class="content-view task-phase">
+                <h2 class="view-title">المرحلة الثالثة: التطوير والإنتاج (Development)</h2>
+                <div class="task-list-panel">
+                    <div class="task-row" onclick="checkboxTrigger(this)">
+                        <input type="checkbox" class="task-check" data-task="إنتاج أدلة مرجعية سريعة لتخفيف العبء التقني عن المعلمين.">
+                        <label>إنتاج أدلة مرجعية سريعة (Micro-learning) لتخفيف العبء التقني عن المعلمين.</label>
+                    </div>
+                    <div class="task-row" onclick="checkboxTrigger(this)">
+                        <input type="checkbox" class="task-check" data-task="تطوير نماذج تحضير دروس تلزم بدمج أنشطة الإنتاج الإبداعي.">
+                        <label>تطوير نماذج تحضير دروس تلزم بدمج أنشطة الإنتاج الطلابي الإبداعي.</label>
+                    </div>
+                </div>
+                <div class="templates-container">
+                    <h3>📄 النماذج الإجرائية التطبيقية</h3>
+                    <div class="template-box">
+                        <div class="template-info">
+                            <h4>تصميم خطة درس وفق (PIC-RAT) - معبأ</h4>
+                            <p>تحويل درس تقليدي إلى نشاط تفاعلي إبداعي بالكامل.</p>
+                        </div>
+                        <button class="template-btn" onclick="openModal('modal-picrat')">عرض النموذج التطبيقي</button>
+                    </div>
+                </div>
+            </section>
+
+             <section id="p4" class="content-view task-phase">
+                <h2 class="view-title">المرحلة الرابعة: التنفيذ والممارسة الميدانية (Implementation)</h2>
+                <div class="task-list-panel">
+                    <div class="task-row" onclick="checkboxTrigger(this)">
+                        <input type="checkbox" class="task-check" data-task="إطلاق تجريبي (Piloting) للنظام على مستويات دراسية محددة.">
+                        <label>إطلاق تجريبي (Piloting) للنظام على مستويات دراسية محددة لقياس التفاعل.</label>
+                    </div>
+                    <div class="task-row" onclick="checkboxTrigger(this)">
+                        <input type="checkbox" class="task-check" data-task="تفعيل شبكة السفراء الرقميين لتقديم الدعم والمساندة الفورية.">
+                        <label>تفعيل شبكة "السفراء الرقميين" لتقديم الدعم والمساندة الفورية للمعلمين.</label>
+                    </div>
+                </div>
+            </section>
+
+             <section id="p5" class="content-view task-phase">
+                <h2 class="view-title">المرحلة الخامسة: التقويم والأثر (Evaluation)</h2>
+                <div class="task-list-panel">
+                    <div class="task-row" onclick="checkboxTrigger(this)">
+                        <input type="checkbox" class="task-check" data-task="تفعيل لوحة مؤشرات الأداء (KPIs) لمراقبة العمليات.">
+                        <label>تفعيل لوحة مؤشرات الأداء (KPIs) لمراقبة العمليات التشغيلية والتربوية.</label>
+                    </div>
+                    <div class="task-row" onclick="checkboxTrigger(this)">
+                        <input type="checkbox" class="task-check" data-task="إصدار تقرير الشفافية الختامي لتوثيق التجربة.">
+                        <label>إصدار تقرير الشفافية الختامي لتوثيق التجربة (قائد سفير).</label>
+                    </div>
+                </div>
+                <div class="templates-container">
+                    <h3>📄 النماذج الإجرائية التطبيقية</h3>
+                    <div class="template-box">
+                        <div class="template-info">
+                            <h4>مؤشرات الأداء الرئيسية (KPIs) - معبأة</h4>
+                            <p>مقاييس دقيقة للاستقرار التقني، ورضا المستفيدين، والأثر التعليمي.</p>
+                        </div>
+                        <button class="template-btn" onclick="openModal('modal-kpi')">عرض النموذج التطبيقي</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="dashboard-analytics" class="content-view">
+                <h2 class="view-title">مركز ذكاء الأعمال وتحليل البيانات (Power BI)</h2>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-title">إجمالي المهام الاستراتيجية</div>
+                        <div class="kpi-value" id="kpi-total">10</div>
+                        <div class="kpi-trend">مستهدفات ADDIE المعتمدة</div>
+                    </div>
+                    <div class="kpi-card" style="border-top-color: var(--success-green);">
+                        <div class="kpi-title">المهام المنجزة ميدانياً</div>
+                        <div class="kpi-value" id="kpi-completed">0</div>
+                        <div class="kpi-trend">تم التوثيق والاعتماد</div>
+                    </div>
+                    <div class="kpi-card" style="border-top-color: var(--gold-accent);">
+                        <div class="kpi-title">معدل تبني المعلمين للنظام</div>
+                        <div class="kpi-value">82%</div>
+                        <div class="kpi-trend">↑ نمو مستمر (نموذج ARCS)</div>
+                    </div>
+                    <div class="kpi-card" style="border-top-color: var(--chart-purple);">
+                        <div class="kpi-title">استقرار البنية التحتية (CoSN)</div>
+                        <div class="kpi-value">99.8%</div>
+                        <div class="kpi-trend">معدل وقت التشغيل (Uptime)</div>
+                    </div>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="chart-box">
+                        <div class="chart-header"><span>توزيع إنجاز المهام حسب مراحل التنفيذ</span></div>
+                        <div class="bar-chart">
+                            <div class="bar-col"><div class="bar" id="bar-p1" style="height: 0%;"></div><div class="bar-label">التحليل</div></div>
+                            <div class="bar-col"><div class="bar" id="bar-p2" style="height: 0%;"></div><div class="bar-label">التصميم</div></div>
+                            <div class="bar-col"><div class="bar" id="bar-p3" style="height: 0%;"></div><div class="bar-label">التطوير</div></div>
+                            <div class="bar-col"><div class="bar" id="bar-p4" style="height: 0%;"></div><div class="bar-label">التنفيذ</div></div>
+                            <div class="bar-col"><div class="bar" id="bar-p5" style="height: 0%;"></div><div class="bar-label">التقويم</div></div>
+                        </div>
+                    </div>
+                    <div class="chart-box">
+                        <div class="chart-header">مؤشر التحول الشامل</div>
+                        <div class="donut-chart" id="donut-chart"><div class="donut-inner" id="donut-val">0%</div></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="report-section" class="content-view">
+                <button class="export-btn" onclick="exportPDF()">📄 تصدير التقرير الرسمي (PDF) للطباعة</button>
+                <div class="report-panel" id="printable-report">
+                    <div style="text-align: center; margin-bottom: 40px; border-bottom: 2px solid var(--border-color); padding-bottom: 20px;">
+                        <h1 style="color: var(--navy-dark); margin: 0 0 10px 0;">تقرير الأداء الاستراتيجي للتحول التكنولوجي</h1>
+                        <p style="font-size: 1.2em; color: var(--text-secondary); font-weight:700;">مدارس الصالحية الأهلية | الخطة الاستراتيجية 2026-2028</p>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; color: var(--text-secondary); font-weight: 700; margin-top: 20px;">
+                        <div>المنهجية المعتمدة: تصميم ADDIE الشامل</div>
+                        <div>تاريخ التصدير: <span id="current-date"></span></div>
+                    </div>
+                    <div style="margin-top: 40px; border-bottom: 2px solid var(--navy-dark); padding-bottom: 10px; font-size: 1.4em; font-weight: 800; color: var(--navy-dark);">
+                        سجل المهام الإجرائية المعتمدة والمنفذة ميدانياً
+                    </div>
+                    <ul id="generated-task-list" style="list-style-type: none; padding: 0; margin-top: 20px;">
+                        <li style="color: #94A3B8; font-weight: 400; text-align: center; border:none;">(لم يتم إنجاز أي مهام بعد. يرجى تحديد المهام من القوائم السابقة).</li>
+                    </ul>
+                    <div style="margin-top: 80px; display: flex; justify-content: space-between;">
+                        <div style="text-align: center;">
+                            <p style="font-weight: 700; color: var(--text-secondary);">اعتماد لجنة الحوكمة الرقمية</p>
+                            <p>___________________</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <p style="font-weight: 700; color: var(--text-secondary);">إعداد وتصميم</p>
+                            <p style="font-weight: 800; color: var(--navy-dark); font-size: 1.2em;">فاطمة بنت عبدالله الأسمري</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="designer-footer">إعداد وتصميم: فاطمة بنت عبدالله الأسمري</div>
+
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="modal-dikw">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('modal-dikw')">×</button>
+            <div class="doc-header">
+                <h2>نموذج تطبيق (DIKW)</h2>
+                <p>مدارس الصالحية الأهلية - تحليل استقرار المنصة التعليمية</p>
+            </div>
+            <table class="doc-table">
+                <tr><th>البيانات (Data)</th><td>سجلات دخول المعلمين توضح أن 60% فقط يرفعون المواد عبر المنصة، و 40% لا يستخدمونها.</td></tr>
+                <tr><th>المعلومات (Information)</th><td>غالبية الـ 40% غير المستخدمين هم من معلمي الصفوف الأولية، والدخول يقل يوم الخميس.</td></tr>
+                <tr><th>المعرفة (Knowledge)</th><td>معلمو الصفوف الأولية يفتقرون للتدريب على دمج التقنية بمحتواهم، والمنصة تعاني بطئاً نهاية الأسبوع.</td></tr>
+                <tr><th>الحكمة (Wisdom) - القرار</th><td>إطلاق برنامج تدريبي (TPACK) مخصص لمعلمي الصفوف الأولية، وتوجيه الدعم الفني لرفع سعة السيرفرات أيام الخميس.</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-swot">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('modal-swot')">×</button>
+            <div class="doc-header">
+                <h2>مصفوفة التحليل البيئي (SWOT)</h2>
+                <p>مدارس الصالحية الأهلية - الجاهزية للتحول الرقمي</p>
+            </div>
+            <table class="doc-table" style="text-align: center;">
+                <tr>
+                    <td style="width: 50%; background: #F0FDF4;"><h3 style="color:var(--success-green); margin:0 0 10px 0;">نقاط القوة (Strengths)</h3>
+                    توفر شاشات تفاعلية في 80% من الفصول.<br>رغبة الإدارة العليا في دعم التحول.</td>
+                    <td style="width: 50%; background: #FEF2F2;"><h3 style="color:#DC2626; margin:0 0 10px 0;">نقاط الضعف (Weaknesses)</h3>
+                    ضعف تدريب الكادر على أدوات الذكاء الاصطناعي.<br>سرعة الإنترنت غير مستقرة في الدور العلوي.</td>
+                </tr>
+                <tr>
+                    <td style="width: 50%; background: #EFF6FF;"><h3 style="color:var(--chart-blue); margin:0 0 10px 0;">الفرص (Opportunities)</h3>
+                    شراكة مجانية متاحة مع منصة تعليمية كبرى.<br>دعم وزارة التعليم لبرامج المواطنة الرقمية.</td>
+                    <td style="width: 50%; background: #FFFBEB;"><h3 style="color:#D97706; margin:0 0 10px 0;">التهديدات (Threats)</h3>
+                    مقاومة المعلمين القدامى للتغيير التقني السريع.<br>مخاوف أولياء الأمور من اختراق الخصوصية.</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-smart">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('modal-smart')">×</button>
+            <div class="doc-header">
+                <h2>مصفوفة الأهداف الاستراتيجية (SMART)</h2>
+                <p>ملاحظة: الأهداف مصاغة بفعل سلوكي واحد فقط لضمان دقة التقييم</p>
+            </div>
+            <table class="doc-table">
+                <tr><th>الهدف الأول (تربوي)</th><td><strong>أن يُطبق</strong> المعلم معايير التقييم الرقمي في نشاط واحد أسبوعياً خلال الفصل الدراسي الأول بنسبة نجاح 90%.</td></tr>
+                <tr><th>الهدف الثاني (تشغيلي)</th><td><strong>أن يُخفض</strong> قسم الدعم الفني نسبة الانقطاعات في الشبكة إلى أقل من 2% بنهاية شهر ديسمبر 2026.</td></tr>
+                <tr><th>الهدف الثالث (تمكين)</th><td><strong>أن يُنتج</strong> السفير الرقمي حقيبتين تدريبيتين لدعم زملائه المعلمين قبل بدء اختبارات المنتصف.</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-picrat">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('modal-picrat')">×</button>
+            <div class="doc-header">
+                <h2>خطة تحويل درس وفق (PIC-RAT)</h2>
+                <p>درس العلوم: دورة حياة النبات</p>
+            </div>
+            <table class="doc-table">
+                <tr><th>الممارسة التقليدية (PR)</th><td>(سلبي / استبدالي): الطالب يشاهد عرض PowerPoint صممه المعلم لصور نمو النبات.</td></tr>
+                <tr><th>الممارسة المطورة (IA)</th><td>(تفاعلي / تعزيزي): الطالب يستخدم محاكاة رقمية لسقي النبات وتغيير الإضاءة ويرى النتيجة فوراً على الشاشة.</td></tr>
+                <tr><th>التحول الإبداعي (CT)</th><td><strong>(إبداعي / تحولي):</strong> الطالب <strong>يُصمم</strong> مقطع فيديو بتقنية (Stop Motion) يوثق فيه مراحل نمو نبتة حقيقية في منزله، ويدمج فيه تعليقه الصوتي، ثم يشاركه في منصة المدرسة المفتوحة.</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-kpi">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('modal-kpi')">×</button>
+            <div class="doc-header">
+                <h2>مؤشرات الأداء الرئيسية (KPIs) - منظومة 5-E</h2>
+                <p>لوحة قياس النضج التكنولوجي لمدارس الصالحية الأهلية</p>
+            </div>
+            <table class="doc-table">
+                <tr><th>مؤشر الأداء التشغيلي (CoSN)</th><td>نسبة وقت تشغيل النظام (Uptime) لا تقل عن 99.8% طوال أيام الأسبوع الدراسي.</td></tr>
+                <tr><th>مؤشر الأداء التربوي (ISTE)</th><td>وصول 75% من المعلمين إلى مستوى (الابتكار C) في نموذج PIC-RAT عند تصميم الواجبات.</td></tr>
+                <tr><th>مؤشر رضا المستفيدين (ARCS)</th><td>تحقيق نسبة رضا 85% في استبانات أولياء الأمور حول سهولة المتابعة عبر النظام الرقمي.</td></tr>
+                <tr><th>مؤشر الأمان والحوكمة</th><td>تسجيل (صفر) خروقات لبيانات الطلاب، مع اعتماد الموافقة المستنيرة بنسبة 100% للقرارات الآلية.</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString('ar-SA', options);
+
+        function navigate(viewId, element) {
+            document.querySelectorAll('.content-view').forEach(view => { view.classList.remove('active'); });
+            document.querySelectorAll('.menu-link').forEach(link => { link.classList.remove('active'); });
+            
+            document.getElementById(viewId).classList.add('active');
+            element.classList.add('active');
+            document.querySelector('.workspace').scrollTop = 0;
+            
+            if(viewId === 'dashboard-analytics') updateDashboardCharts();
+        }
+
+        function checkboxTrigger(rowElement) {
+            const checkbox = rowElement.querySelector('input[type="checkbox"]');
+            if(event.target !== checkbox) checkbox.checked = !checkbox.checked;
+            
+            if (checkbox.checked) rowElement.classList.add('checked');
+            else rowElement.classList.remove('checked');
+            
+            calculateMetrics();
+            updateReportGenerator();
+        }
+
+        function calculateMetrics() {
+            const totalTasks = document.querySelectorAll('.task-check').length;
+            const checkedTasks = document.querySelectorAll('.task-check:checked').length;
+            
+            const finalScore = totalTasks === 0 ? 0 : Math.round((checkedTasks / totalTasks) * 100);
+            
+            document.getElementById('progress-fill').style.width = finalScore + '%';
+            document.getElementById('progress-num').innerText = finalScore + '%';
+            document.getElementById('top-edge-fill').style.width = finalScore + '%';
+            
+            document.getElementById('kpi-total').innerText = totalTasks;
+            document.getElementById('kpi-completed').innerText = checkedTasks;
+            document.getElementById('donut-val').innerText = finalScore + '%';
+            document.getElementById('donut-chart').style.background = `conic-gradient(var(--success-green) ${finalScore}%, #E2E8F0 0)`;
+        }
+
+        function updateDashboardCharts() {
+            const phases = ['p1', 'p2', 'p3', 'p4', 'p5'];
+            phases.forEach(phase => {
+                const section = document.getElementById(phase);
+                if(section) {
+                    const phaseTotal = section.querySelectorAll('.task-check').length;
+                    const phaseChecked = section.querySelectorAll('.task-check:checked').length;
+                    const height = phaseTotal === 0 ? 0 : (phaseChecked / phaseTotal) * 100;
+                    document.getElementById('bar-' + phase).style.height = height + '%';
+                }
+            });
+        }
+
+        function updateReportGenerator() {
+            const list = document.getElementById('generated-task-list');
+            list.innerHTML = '';
+            
+            const checkedBoxes = document.querySelectorAll('.task-check:checked');
+            if(checkedBoxes.length === 0) {
+                list.innerHTML = '<li style="color: #94A3B8; font-weight: 400; justify-content:center; border:none;">(لم يتم إنجاز أي مهام بعد).</li>';
+                return;
+            }
+
+            checkedBoxes.forEach(box => {
+                const li = document.createElement('li');
+                li.innerText = box.getAttribute('data-task');
+                list.appendChild(li);
+            });
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // إغلاق النافذة عند الضغط خارجها
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                event.target.classList.remove('active');
+            }
+        }
+
+        function exportPDF() { window.print(); }
+        
+        calculateMetrics();
+        updateDashboardCharts();
+    </script>
+</body>
+</html>
